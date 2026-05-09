@@ -49,12 +49,10 @@ function TerminalView() {
 }
 
 export default function BottomPanel() {
-  const { bottomPanelOpen, activeBottomPanel, setActiveBottomPanel, toggleBottomPanel } = useIDEStore();
-
-  if (!bottomPanelOpen) return null;
+  const { activeBottomPanel, setActiveBottomPanel, toggleBottomPanel } = useIDEStore();
 
   return (
-    <div className="h-[220px] bg-[#0a0a0d] border-t border-[#1e1e22] flex flex-col shrink-0">
+    <div className="w-full h-full bg-[#0a0a0d] border-t border-[#1e1e22] flex flex-col shrink-0">
       {/* Tab bar */}
       <div className="flex items-center border-b border-[#1e1e22] shrink-0">
         {PANELS.map((panel) => (

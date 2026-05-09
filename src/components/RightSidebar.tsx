@@ -10,7 +10,7 @@ import { useIDEStore } from '@/lib/store';
 import ApiKeysModal from './ApiKeysModal';
 
 export default function RightSidebar() {
-  const { rightSidebarOpen } = useIDEStore();
+  // Removed rightSidebarOpen since IDEShell handles conditional rendering
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
     { id: '1', role: 'agent', content: 'Ready for vibe coding. I have access to your workspace.' }
@@ -28,8 +28,6 @@ export default function RightSidebar() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  if (!rightSidebarOpen) return null;
 
   const handleSend = () => {
     if (!input.trim() && attachedFiles.length === 0) return;
@@ -52,7 +50,7 @@ export default function RightSidebar() {
   };
 
   return (
-    <div className="w-[340px] bg-[#0c0c0f] border-l border-[#1e1e22] flex flex-col overflow-hidden shrink-0 z-40">
+    <div className="w-full h-full bg-[#0c0c0f] flex flex-col overflow-hidden shrink-0 z-40">
       {/* Header Controls */}
       <div className="flex flex-col border-b border-[#1e1e22] bg-white/[0.01]">
         <div className="flex items-center justify-between px-3 py-2 border-b border-[#1e1e22]">

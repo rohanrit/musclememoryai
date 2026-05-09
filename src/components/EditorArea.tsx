@@ -75,11 +75,12 @@ export default function EditorArea() {
   );
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="w-full h-full flex flex-col overflow-hidden">
       <EditorTabs />
       {activeTab ? (
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 relative overflow-hidden">
           <MonacoEditor
+            width="100%"
             height="100%"
             language={activeTab.language}
             value={activeTab.content}

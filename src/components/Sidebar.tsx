@@ -70,12 +70,10 @@ function TreeNode({ node, depth = 0 }: { node: FileNode; depth?: number }) {
 }
 
 export default function Sidebar() {
-  const { fileTree, sidebarOpen } = useIDEStore();
-
-  if (!sidebarOpen) return null;
+  const { fileTree } = useIDEStore();
 
   return (
-    <div className="w-[260px] bg-[#0c0c0f] border-r border-[#1e1e22] flex flex-col overflow-hidden shrink-0">
+    <div className="w-full h-full bg-[#0c0c0f] flex flex-col overflow-hidden shrink-0">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-[#1e1e22]">
         <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Explorer</span>

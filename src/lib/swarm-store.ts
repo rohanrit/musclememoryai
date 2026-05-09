@@ -80,7 +80,7 @@ export const useSwarmStore = create<SwarmState>((set, get) => ({
     const chunks = s.chunks.map((c) => {
       if (c.status === 'complete' || c.status === 'failed') return c;
       const progress = Math.min(100, c.progress + Math.random() * 15);
-      let status = c.status;
+      let status: ChunkStatus['status'] = c.status;
       if (c.status === 'pending' && Math.random() > 0.7) status = 'dispatched';
       else if (c.status === 'dispatched' && Math.random() > 0.6) status = 'processing';
       else if (c.status === 'processing' && progress > 80) status = 'verifying';
