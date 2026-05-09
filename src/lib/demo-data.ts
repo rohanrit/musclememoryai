@@ -93,7 +93,7 @@ export const DEMO_CONTENTS: Record<string, string> = {
     "}",
   ].join('\n'),
   '/vibecode-app/.env': [
-    "DATABASE_URL=postgresql://user:s3cret@db.vibecode.dev:5432/main",
+    "DATABASE_URL=file:./local.db",
     "API_SECRET_KEY=sk-prod-aBcDeFgHiJkLmNoPqRs",
     "JWT_SECRET=my-super-secret-jwt-key",
   ].join('\n'),

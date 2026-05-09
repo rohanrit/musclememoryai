@@ -3,13 +3,13 @@
 import React from 'react';
 import {
   PanelLeftClose, PanelLeftOpen, Terminal, Layout,
-  Wifi, WifiOff, Zap, ChevronDown, Command,
+  Wifi, WifiOff, Zap, ChevronDown, Command, Sparkles,
 } from 'lucide-react';
 import { useIDEStore } from '@/lib/store';
 import { useSwarmStore } from '@/lib/swarm-store';
 
 export default function TitleBar() {
-  const { sidebarOpen, toggleSidebar, toggleCommandBar, toggleBottomPanel } = useIDEStore();
+  const { sidebarOpen, rightSidebarOpen, toggleSidebar, toggleRightSidebar, toggleCommandBar, toggleBottomPanel } = useIDEStore();
   const { isConnected, stats } = useSwarmStore();
 
   return (
@@ -50,6 +50,9 @@ export default function TitleBar() {
       <div className="flex items-center gap-2 ml-4">
         <button onClick={toggleBottomPanel} className="p-1.5 rounded-md hover:bg-white/5 text-zinc-500 hover:text-zinc-300 transition-colors" title="Toggle Panel">
           <Layout size={14} />
+        </button>
+        <button onClick={toggleRightSidebar} className={`p-1.5 rounded-md hover:bg-white/5 transition-colors ${rightSidebarOpen ? 'text-amber-400 bg-amber-400/10' : 'text-zinc-500 hover:text-zinc-300'}`} title="Toggle Agent Chat">
+          <Sparkles size={14} />
         </button>
         <button onClick={toggleBottomPanel} className="p-1.5 rounded-md hover:bg-white/5 text-zinc-500 hover:text-zinc-300 transition-colors" title="Terminal">
           <Terminal size={14} />

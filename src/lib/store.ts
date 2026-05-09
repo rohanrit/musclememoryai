@@ -13,6 +13,7 @@ interface IDEState {
   tabs: EditorTab[];
   activeTabId: string | null;
   sidebarOpen: boolean;
+  rightSidebarOpen: boolean;
   bottomPanelOpen: boolean;
   activeBottomPanel: PanelId;
   terminalLines: TerminalLine[];
@@ -24,6 +25,7 @@ interface IDEState {
   closeTab: (tabId: string) => void;
   setActiveTab: (tabId: string) => void;
   toggleSidebar: () => void;
+  toggleRightSidebar: () => void;
   toggleBottomPanel: () => void;
   setActiveBottomPanel: (panel: PanelId) => void;
   toggleCommandBar: () => void;
@@ -42,6 +44,7 @@ export const useIDEStore = create<IDEState>((set, get) => ({
   }],
   activeTabId: 'tab-1',
   sidebarOpen: true,
+  rightSidebarOpen: true,
   bottomPanelOpen: true,
   activeBottomPanel: 'swarm',
   terminalLines: INITIAL_TERMINAL,
@@ -84,6 +87,7 @@ export const useIDEStore = create<IDEState>((set, get) => ({
   }),
 
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  toggleRightSidebar: () => set((s) => ({ rightSidebarOpen: !s.rightSidebarOpen })),
   toggleBottomPanel: () => set((s) => ({ bottomPanelOpen: !s.bottomPanelOpen })),
   setActiveBottomPanel: (panel) => set({ activeBottomPanel: panel, bottomPanelOpen: true }),
   toggleCommandBar: () => set((s) => ({ commandBarOpen: !s.commandBarOpen })),

@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import TitleBar from '@/components/TitleBar';
 import Sidebar from '@/components/Sidebar';
+import RightSidebar from '@/components/RightSidebar';
 import EditorArea from '@/components/EditorArea';
 import BottomPanel from '@/components/BottomPanel';
 import StatusBar from '@/components/StatusBar';
@@ -25,6 +26,7 @@ export default function IDEShell() {
           <EditorArea />
           <BottomPanel />
         </div>
+        <RightSidebar />
       </div>
       <StatusBar />
       <CommandBar />
