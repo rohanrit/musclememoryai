@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: #09090b;
+  --color-bg-secondary: #0f0f12;
+  --color-bg-tertiary: #18181b;
+  --color-bg-elevated: #1c1c22;
+  --color-border-default: #27272a;
+  --color-border-subtle: #1e1e22;
+  --color-accent-violet: #7c3aed;
+  --color-accent-violet-dim: #6d28d9;
+  --color-accent-cyan: #06b6d4;
+  --color-accent-emerald: #10b981;
+  --color-accent-amber: #f59e0b;
+  --color-accent-rose: #f43f5e;
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted: #71717a;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+}
+
+/* ===== BASE ===== */
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(6px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(6px) rotate(-360deg); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-slide-up { animation: slide-up 0.3s ease-out; }
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(124,58,237,0.1) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+.animate-orbit { animation: orbit 3s linear infinite; }
+.animate-fade-in { animation: fade-in 0.2s ease-out; }
+
+/* ===== GLOW EFFECTS ===== */
+.glow-violet {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.15), 0 0 60px rgba(124, 58, 237, 0.05);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15), 0 0 60px rgba(6, 182, 212, 0.05);
+}
+
+.glow-border {
+  border-color: rgba(124, 58, 237, 0.3);
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.1);
+}
+
+/* ===== GLASS EFFECT ===== */
+.glass {
+  background: rgba(15, 15, 18, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(39, 39, 42, 0.6);
+}
+
+/* ===== IDE LAYOUT ===== */
+.ide-grid {
+  display: grid;
+  grid-template-rows: 44px 1fr auto;
+  grid-template-columns: auto 1fr;
+  height: 100vh;
+  width: 100vw;
+}
+
+.ide-titlebar {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+.ide-sidebar {
+  grid-column: 1;
+  grid-row: 2 / -1;
+}
+
+.ide-main {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ide-bottom {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+/* ===== STATUS DOT ===== */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.idle { background: #71717a; }
+.status-dot.computing { background: #7c3aed; animation: pulse-glow 1.5s infinite; }
+.status-dot.verifying { background: #f59e0b; animation: pulse-glow 2s infinite; }
+.status-dot.seeding { background: #10b981; }
+.status-dot.offline { background: #3f3f46; }
+
+/* ===== CHUNK PROGRESS ===== */
+.chunk-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-bg-tertiary);
+  overflow: hidden;
+}
+
+.chunk-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease-out;
+}
+
+.chunk-bar-fill.pending { background: #52525b; }
+.chunk-bar-fill.dispatched { background: #06b6d4; }
+.chunk-bar-fill.processing { background: #7c3aed; }
+.chunk-bar-fill.verifying { background: #f59e0b; }
+.chunk-bar-fill.complete { background: #10b981; }
+.chunk-bar-fill.failed { background: #f43f5e; }

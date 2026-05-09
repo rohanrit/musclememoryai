@@ -1,0 +1,75 @@
+'use client';
+// TitleBar — the top bar of the IDE with branding, controls, and status
+import React from 'react';
+import {
+  PanelLeftClose, PanelLeftOpen, Terminal, Layout,
+  Wifi, WifiOff, Zap, ChevronDown, Command,
+} from 'lucide-react';
+import { useIDEStore } from '@/lib/store';
+import { useSwarmStore } from '@/lib/swarm-store';
+
+export default function TitleBar() {
+  const { sidebarOpen, toggleSidebar, toggleCommandBar, toggleBottomPanel } = useIDEStore();
+  const { isConnected, stats } = useSwarmStore();
+
+  return (
+    <div className="ide-titlebar flex items-center bg-[#0a0a0d] border-b border-[#1e1e22] px-3 gap-2 select-none z-50">
+      {/* Left: Sidebar toggle + Brand */}
+      <button onClick={toggleSidebar} className="p-1.5 rounded-md hover:bg-white/5 text-zinc-500 hover:text-zinc-300 transition-colors" title="Toggle Sidebar">
+        {sidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
+      </button>
+
+      <div className="flex items-center gap-1.5 mr-4">
+        <div className="relative w-5 h-5">
+          <div className="absolute inset-0 rounded bg-gradient-to-br from-violet-500 to-cyan-500 opacity-80" />
+          <div className="absolute inset-[2px] rounded bg-[#0a0a0d] flex items-center justify-center">
+            <Zap size={10} className="text-violet-400" />
+          </div>
+        </div>
+        <span className="text-[13px] font-semibold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
+          VibeCode
+        </span>
+        <span className="text-[10px] text-zinc-600 font-mono">v0.1α</span>
+      </div>
+
+      {/* Center: Command Bar Trigger */}
+      <button
+        onClick={toggleCommandBar}
+        className="flex-1 max-w-xl mx-auto flex items-center gap-2 px-3 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:border-violet-500/30 hover:bg-white/[0.05] transition-all group cursor-text"
+      >
+        <Command size={12} className="text-zinc-600 group-hover:text-violet-400 transition-colors" />
+        <span className="text-[12px] text-zinc-600 group-hover:text-zinc-500 transition-colors">
+          Vibe a command...
+        </span>
+        <kbd className="ml-auto text-[10px] text-zinc-700 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/[0.06] font-mono">
+          Ctrl+K
+        </kbd>
+      </button>
+
+      {/* Right: Status indicators */}
+      <div className="flex items-center gap-2 ml-4">
+        <button onClick={toggleBottomPanel} className="p-1.5 rounded-md hover:bg-white/5 text-zinc-500 hover:text-zinc-300 transition-colors" title="Toggle Panel">
+          <Layout size={14} />
+        </button>
+        <button onClick={toggleBottomPanel} className="p-1.5 rounded-md hover:bg-white/5 text-zinc-500 hover:text-zinc-300 transition-colors" title="Terminal">
+          <Terminal size={14} />
+        </button>
+
+        <div className="w-px h-4 bg-white/[0.06] mx-1" />
+
+        {/* Swarm Status */}
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.03] border border-white/[0.04]">
+          {isConnected ? (
+            <Wifi size={12} className="text-emerald-400" />
+          ) : (
+            <WifiOff size={12} className="text-red-400" />
+          )}
+          <span className="text-[11px] text-zinc-500 font-mono">
+            {stats.activePeers} peers
+          </span>
+          <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse-glow' : 'bg-red-400'}`} />
+        </div>
+      </div>
+    </div>
+  );
+}
