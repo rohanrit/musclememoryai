@@ -9,15 +9,25 @@ import StatusBar from '@/components/StatusBar';
 import CommandBar from '@/components/CommandBar';
 import { useSwarmStore } from '@/lib/swarm-store';
 import { useIDEStore } from '@/lib/store';
+import type { FileNode } from '@/lib/types';
 
-export default function IDEShell() {
+export default function IDEShell({ initialFileTree }: {
+  initialFileTree?: FileNode[];
+}) {
   const initPeers = useSwarmStore((s) => s.initPeers);
+  const initializeIDE = useIDEStore((s) => s.initializeIDE);
   const { sidebarOpen, bottomPanelOpen, rightSidebarOpen, toggleSidebar, toggleRightSidebar, toggleBottomPanel } = useIDEStore();
   const initialized = useRef(false);
 
   useEffect(() => {
     initPeers();
   }, [initPeers]);
+
+  useEffect(() => {
+    if (initialFileTree && initialFileTree.length > 0) {
+      initializeIDE(initialFileTree, 0, 0);
+    }
+  }, [initialFileTree, initializeIDE]);
 
   useEffect(() => {
     if (initialized.current) return;

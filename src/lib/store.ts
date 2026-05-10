@@ -1,6 +1,6 @@
 // VibeCode IDE Store
 import { create } from 'zustand';
-import type { EditorTab, TerminalLine } from './types';
+import type { EditorTab, TerminalLine, FileNode } from './types';
 import { generateId, getLanguageFromPath, getFileName } from './utils';
 import { DEMO_FILE_TREE, DEMO_CONTENTS, INITIAL_TERMINAL } from './demo-data';
 
@@ -19,6 +19,13 @@ interface IDEState {
   terminalLines: TerminalLine[];
   commandBarOpen: boolean;
   fileContents: Record<string, string>;
+  fileCount: number;
+  totalSize: number;
+  loadingDirs: Set<string>;
+  initializeIDE: (tree: FileNode[], fileCount: number, totalSize: number) => void;
+  setFileTree: (tree: FileNode[]) => void;
+  loadDirectory: (path: string) => Promise<void>;
+  refreshDirectory: (path: string) => Promise<void>;
   toggleDir: (path: string) => void;
   selectFile: (path: string) => void;
   openFile: (path: string) => void;
@@ -51,6 +58,9 @@ export const useIDEStore = create<IDEState>((set, get) => ({
   terminalLines: INITIAL_TERMINAL,
   commandBarOpen: false,
   fileContents: DEMO_CONTENTS,
+  fileCount: 0,
+  totalSize: 0,
+  loadingDirs: new Set(),
 
   toggleDir: (path) => set((s) => {
     const next = new Set(s.expandedDirs);
@@ -60,16 +70,31 @@ export const useIDEStore = create<IDEState>((set, get) => ({
 
   selectFile: (path) => set({ selectedFile: path }),
 
-  openFile: (path) => {
+  openFile: async (path) => {
     const s = get();
     const existing = s.tabs.find((t) => t.filePath === path);
     if (existing) {
       set({ tabs: s.tabs.map((t) => ({ ...t, isActive: t.id === existing.id })), activeTabId: existing.id, selectedFile: path });
       return;
     }
-    const content = s.fileContents[path] || `// ${getFileName(path)}`;
+    let content = s.fileContents[path];
+    if (!content) {
+      try {
+        const res = await fetch(`/api/file-content?path=${encodeURIComponent(path)}`);
+        if (res.ok) {
+          const data = await res.json();
+          content = data.content;
+        }
+      } catch { /* fallback */ }
+    }
+    content = content || `// ${getFileName(path)}`;
     const tab: EditorTab = { id: generateId(), filePath: path, fileName: getFileName(path), language: getLanguageFromPath(path), content, isDirty: false, isActive: true };
-    set({ tabs: [...s.tabs.map((t) => ({ ...t, isActive: false })), tab], activeTabId: tab.id, selectedFile: path });
+    set((s) => ({
+      tabs: [...s.tabs.map((t) => ({ ...t, isActive: false })), tab],
+      activeTabId: tab.id,
+      selectedFile: path,
+      fileContents: { ...s.fileContents, [path]: content },
+    }));
   },
 
   closeTab: (tabId) => {
@@ -95,6 +120,75 @@ export const useIDEStore = create<IDEState>((set, get) => ({
     rightSidebarOpen: !s.rightSidebarOpen,
     bottomPanelOpen: !s.bottomPanelOpen,
   })),
+  initializeIDE: (tree, fileCount, totalSize) => set(() => ({
+    fileTree: tree,
+    fileCount,
+    totalSize,
+    expandedDirs: new Set(),
+  })),
+  setFileTree: (tree) => set({ fileTree: tree, expandedDirs: new Set() }),
+  refreshDirectory: async (dirPath) => {
+    set((s) => ({ loadingDirs: new Set(s.loadingDirs).add(dirPath) }));
+    try {
+      const res = await fetch(`/api/directory-content?path=${encodeURIComponent(dirPath)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const children: FileNode[] = data.children;
+
+      function mergeChildren(nodes: FileNode[]): FileNode[] {
+        return nodes.map((n) => {
+          if (n.path === dirPath) {
+            return { ...n, children };
+          }
+          if (n.children) {
+            return { ...n, children: mergeChildren(n.children) };
+          }
+          return n;
+        });
+      }
+
+      set((s) => ({
+        fileTree: mergeChildren(s.fileTree),
+        loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
+      }));
+    } catch {
+      set((s) => ({
+        loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
+      }));
+    }
+  },
+  loadDirectory: async (dirPath) => {
+    const s = get();
+    if (s.loadingDirs.has(dirPath)) return;
+    set((s) => ({ loadingDirs: new Set(s.loadingDirs).add(dirPath) }));
+    try {
+      const res = await fetch(`/api/directory-content?path=${encodeURIComponent(dirPath)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const children: FileNode[] = data.children;
+
+      function mergeChildren(nodes: FileNode[]): FileNode[] {
+        return nodes.map((n) => {
+          if (n.path === dirPath) {
+            return { ...n, children };
+          }
+          if (n.children) {
+            return { ...n, children: mergeChildren(n.children) };
+          }
+          return n;
+        });
+      }
+
+      set((s) => ({
+        fileTree: mergeChildren(s.fileTree),
+        loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
+      }));
+    } catch {
+      set((s) => ({
+        loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
+      }));
+    }
+  },
   setActiveBottomPanel: (panel) => set({ activeBottomPanel: panel, bottomPanelOpen: true }),
   toggleCommandBar: () => set((s) => ({ commandBarOpen: !s.commandBarOpen })),
 
