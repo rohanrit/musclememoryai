@@ -13,6 +13,7 @@ export default function ApiKeysModal({ isOpen, onClose }: ApiKeysModalProps) {
     { id: 'anthropic', name: 'Anthropic (Claude)' },
     { id: 'antigravity', name: 'Antigravity' },
     { id: 'opencode', name: 'OpenCode' },
+    { id: 'nvidia', name: 'NVIDIA NIM' },
     { id: 'openrouter', name: 'OpenRouter' },
     { id: 'openclaw', name: 'OpenClaw' },
   ];

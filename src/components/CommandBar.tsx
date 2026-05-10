@@ -68,7 +68,7 @@ export default function CommandBar() {
       );
 
       addTerminalLine(response, 'output');
-      addTerminalLine('✅ Task complete via OpenRouter', 'success');
+      addTerminalLine('✅ Task complete', 'success');
     } catch (e: unknown) {
       const err = e as Error;
       addTerminalLine(`Error: ${err.message}`, 'error');

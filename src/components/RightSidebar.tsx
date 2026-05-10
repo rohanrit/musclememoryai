@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import ApiKeysModal from './ApiKeysModal';
 import { callAI, AI_MODELS, DEFAULT_MODEL } from '@/lib/ai';
+import type { AIModel } from '@/lib/ai';
 
 export default function RightSidebar() {
   const [input, setInput] = useState('');
@@ -89,16 +90,27 @@ export default function RightSidebar() {
               <ChevronDown size={10} />
             </button>
             {showModels && (
-              <div className="absolute top-full left-0 mt-1 min-w-[160px] bg-[#1a1a1f] border border-[#2a2a30] rounded-lg shadow-xl py-1 z-50">
-                {AI_MODELS.map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => { setSelectedModel(m.id); setShowModels(false); }}
-                    className={`w-full text-left px-3 py-1.5 text-[11px] transition-colors ${selectedModel === m.id ? 'text-cyan-400 bg-cyan-400/10' : 'text-zinc-400 hover:bg-white/[0.04]'}`}
-                  >
-                    {m.label}
-                  </button>
-                ))}
+              <div className="absolute top-full left-0 mt-1 min-w-[180px] bg-[#1a1a1f] border border-[#2a2a30] rounded-lg shadow-xl py-1 z-50 max-h-[300px] overflow-y-auto">
+                {(() => {
+                  const groups: Record<string, AIModel[]> = {};
+                  for (const m of AI_MODELS) {
+                    (groups[m.provider] ??= []).push(m);
+                  }
+                  return Object.entries(groups).map(([provider, models]) => (
+                    <div key={provider}>
+                      <div className="px-3 py-1 text-[9px] text-zinc-600 uppercase tracking-wider font-semibold">{provider}</div>
+                      {models.map((m) => (
+                        <button
+                          key={m.id}
+                          onClick={() => { setSelectedModel(m.id); setShowModels(false); }}
+                          className={`w-full text-left px-3 py-1.5 text-[11px] transition-colors flex items-center gap-2 ${selectedModel === m.id ? 'text-cyan-400 bg-cyan-400/10' : 'text-zinc-400 hover:bg-white/[0.04]'}`}
+                        >
+                          <span className="truncate flex-1">{m.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ));
+                })()}
               </div>
             )}
           </div>

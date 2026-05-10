@@ -17,8 +17,9 @@
 ### Key Components
 - **`IDEShell.tsx`**: Master layout — CSS grid with resizable panels. Manages sidebar, editor area, right sidebar, bottom panel, and status bar.
 - **`EditorArea.tsx`**: Monaco Editor with multi-file tabs, syntax highlighting, and empty state.
-- **`RightSidebar.tsx`**: AI chat interface. Real LLM integration via OpenRouter. Features:
-  - Model selector dropdown (Claude, GPT, Gemini, Mistral)
+- **`RightSidebar.tsx`**: AI chat interface with multi-provider LLM support. Features:
+  - Model selector dropdown grouped by provider (OpenCode, NVIDIA, OpenRouter)
+  - 16+ models: Big Pickle (default), Qwen, Kimi, MiniMax, GLM, Nemotron, Claude, GPT, Gemini, Mistral
   - Full conversation history with loading state
   - Settings modal for API key management
 - **`Sidebar.tsx`**: File tree explorer with:
@@ -30,7 +31,7 @@
 - **`CommandBar.tsx`**: Ctrl+K command palette with real AI execution. Sends user commands to an LLM and shows results in the terminal.
 - **`TitleBar.tsx`**: Top bar with branding, command bar trigger, panel toggle buttons, and swarm connectivity status.
 - **`StatusBar.tsx`**: Bottom bar with git branch, E2E badge, tab info, CPU.
-- **`ApiKeysModal.tsx`**: Manage AI provider keys. Keys are persisted to `localStorage`.
+- **`ApiKeysModal.tsx`**: Manage AI provider keys (OpenCode, NVIDIA, OpenRouter, Anthropic, Google, etc.). Keys are persisted to `localStorage`.
 
 ### Core Logic
 
@@ -39,9 +40,11 @@
 - **Actions**: File tree operations, tab management, panel toggling, terminal, file system operations
 
 #### AI Module (`ai.ts`)
-- `callAI()` — calls OpenRouter API with conversation history, system prompt, and model selection
-- Model presets: Claude 3.5 Sonnet, Claude 3 Opus, Gemini 2.0 Flash, GPT-4o, GPT-4o Mini, Mistral Large
-- API key loaded from `localStorage` key `bappa_ai_key_openrouter`
+- Multi-provider routing: automatically selects correct API endpoint based on model
+- **OpenCode** (`https://opencode.ai/zen/v1/chat/completions`) — models: Big Pickle **(default)**, Qwen 3.6 Plus, Kimi K2.5, MiniMax M2.7, GLM 5.1, Ling 2.6 Flash
+- **NVIDIA NIM** (`https://integrate.api.nvidia.com/v1/chat/completions`) — models: Nemotron 3 Super 120B, Nemotron Super 49B, Nemotron Ultra 253B
+- **OpenRouter** (`https://openrouter.ai/api/v1/chat/completions`) — models: Claude 3.5 Sonnet, Claude 3 Opus, Gemini 2.0 Flash, GPT-4o, GPT-4o Mini, Mistral Large
+- API keys stored in `localStorage` with keys `bappa_ai_key_opencode`, `bappa_ai_key_nvidia`, `bappa_ai_key_openrouter`
 
 #### Swarm Store (`swarm-store.ts`)
 - Simulated P2P network state (peers, chunks, tasks, stats)
@@ -60,8 +63,8 @@
 ## 🚀 Current State
 - App starts with **no folder loaded** — user picks a folder via `File → Open Folder`
 - **File System Access API** works in Chromium browsers; server-side fallback for others
-- **AI chat** in RightSidebar is fully functional via OpenRouter (requires API key)
-- **Command Bar** (Ctrl+K) executes user prompts via OpenRouter, with active file context
+- **AI chat** in RightSidebar is fully functional with 3 providers — OpenCode (default: Big Pickle), NVIDIA NIM, OpenRouter
+- **Command Bar** (Ctrl+K) executes user prompts via AI, with active file context
 - **All file operations** (create, rename, delete, save, refresh) work with both client-side handles and server-side API
 - **API keys** persist to `localStorage` across sessions
 - **Swarm/P2P** monitor is still simulated UI
