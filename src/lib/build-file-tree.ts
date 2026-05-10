@@ -38,40 +38,6 @@ export function listDirectory(dirPath: string, rootDir: string): FileNode[] {
   return nodes;
 }
 
-function scanDir(dirPath: string, rootDir: string): FileNode[] {
-  const nodes: FileNode[] = [];
-  try {
-    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-    const dirs = entries.filter(e => e.isDirectory());
-    const files = entries.filter(e => e.isFile());
-
-    for (const dir of dirs) {
-      const fullPath = path.join(dirPath, dir.name);
-      const children = scanDir(fullPath, rootDir);
-      nodes.push({
-        name: dir.name,
-        path: path.relative(rootDir, fullPath).replace(/\\/g, '/'),
-        type: 'directory',
-        children,
-      });
-    }
-
-    for (const file of files) {
-      const fullPath = path.join(dirPath, file.name);
-      const stats = fs.statSync(fullPath);
-      nodes.push({
-        name: file.name,
-        path: path.relative(rootDir, fullPath).replace(/\\/g, '/'),
-        type: 'file',
-        extension: path.extname(file.name).toLowerCase() || undefined,
-        size: stats.size,
-        modified: stats.mtimeMs,
-      });
-    }
-  } catch { /* skip inaccessible */ }
-  return nodes;
-}
-
 export function buildFileTree(rootDir: string): FileNode[] {
   const resolved = path.resolve(rootDir);
   if (!fs.existsSync(resolved)) return [];

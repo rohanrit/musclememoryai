@@ -33,8 +33,8 @@ export function stripContext(input: string): { sanitized: string; mappings: Cont
  * Fragment a user prompt into multiple atomic sub-tasks.
  * Each fragment is small enough that no single peer can understand the full context.
  */
-export function fragmentTask(prompt: string, targetFiles: string[]): TaskFragment[] {
-  const { sanitized, mappings: _mappings } = stripContext(prompt);
+export function fragmentTask(prompt: string): TaskFragment[] {
+  const { sanitized } = stripContext(prompt);
   const parentTaskId = generateId();
   const fragments: TaskFragment[] = [];
 

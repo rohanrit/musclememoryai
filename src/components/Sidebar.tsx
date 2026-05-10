@@ -151,7 +151,7 @@ async function apiFs(action: string, body: Record<string, unknown>) {
 }
 
 export default function Sidebar() {
-  const { fileTree, selectedFile, refreshDirectory, setFileTree, tabs, activeTabId, updateFileContent } = useIDEStore();
+  const { fileTree, selectedFile, refreshDirectory, setPickedDirectory, tabs, activeTabId, updateFileContent, fileHandles, dirHandles } = useIDEStore();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [openMenu, setOpenMenu] = useState<'file' | 'edit' | null>(null);
@@ -184,12 +184,24 @@ export default function Sidebar() {
           const name = await promptName('Enter file name:');
           if (!name) return;
           const parent = getParentDir(selectedFile);
-          try {
-            await apiFs('create-file', { path: `${parent}/${name}`, content: '' });
-            await refreshDirectory(parent);
-          } catch (e: unknown) {
-            const err = e as Error;
-            alert(err.message);
+          const dirHandle = dirHandles.get(parent);
+          if (dirHandle) {
+            try {
+              const { createFileInDir } = await import('@/lib/file-system-access');
+              await createFileInDir(dirHandle, name, '');
+              await refreshDirectory(parent);
+            } catch (e: unknown) {
+              const err = e as Error;
+              alert(err.message);
+            }
+          } else {
+            try {
+              await apiFs('create-file', { path: `${parent}/${name}`, content: '' });
+              await refreshDirectory(parent);
+            } catch (e: unknown) {
+              const err = e as Error;
+              alert(err.message);
+            }
           }
         },
       },
@@ -199,12 +211,24 @@ export default function Sidebar() {
           const name = await promptName('Enter folder name:');
           if (!name) return;
           const parent = getParentDir(selectedFile);
-          try {
-            await apiFs('create-folder', { path: `${parent}/${name}` });
-            await refreshDirectory(parent);
-          } catch (e: unknown) {
-            const err = e as Error;
-            alert(err.message);
+          const dirHandle = dirHandles.get(parent);
+          if (dirHandle) {
+            try {
+              const { createDirInDir } = await import('@/lib/file-system-access');
+              await createDirInDir(dirHandle, name);
+              await refreshDirectory(parent);
+            } catch (e: unknown) {
+              const err = e as Error;
+              alert(err.message);
+            }
+          } else {
+            try {
+              await apiFs('create-folder', { path: `${parent}/${name}` });
+              await refreshDirectory(parent);
+            } catch (e: unknown) {
+              const err = e as Error;
+              alert(err.message);
+            }
           }
         },
       },
@@ -213,12 +237,24 @@ export default function Sidebar() {
         label: 'Save', shortcut: 'Ctrl+S',
         action: async () => {
           if (!activeTab) return;
-          try {
-            await apiFs('save', { path: activeTab.filePath, content: activeTab.content });
-            updateFileContent(activeTab.filePath, activeTab.content);
-          } catch (e: unknown) {
-            const err = e as Error;
-            alert(err.message);
+          const handle = fileHandles.get(activeTab.filePath);
+          if (handle) {
+            try {
+              const { saveFileToHandle } = await import('@/lib/file-system-access');
+              await saveFileToHandle(handle, activeTab.content);
+              updateFileContent(activeTab.filePath, activeTab.content);
+            } catch (e: unknown) {
+              const err = e as Error;
+              alert(err.message);
+            }
+          } else {
+            try {
+              await apiFs('save', { path: activeTab.filePath, content: activeTab.content });
+              updateFileContent(activeTab.filePath, activeTab.content);
+            } catch (e: unknown) {
+              const err = e as Error;
+              alert(err.message);
+            }
           }
         },
       },
@@ -226,16 +262,15 @@ export default function Sidebar() {
       {
         label: 'Open Folder...', shortcut: 'Ctrl+O',
         action: async () => {
-          const dir = await promptName('Enter directory path:', '.');
-          if (!dir) return;
           try {
-            const res = await fetch(`/api/directory-content?path=${encodeURIComponent(dir)}`);
-            if (!res.ok) throw new Error('Directory not found');
-            const data = await res.json();
-            setFileTree(data.children);
+            const { pickDirectory, readPickedDirectory } = await import('@/lib/file-system-access');
+            const handles = await pickDirectory();
+            if (!handles) return;
+            const { tree, handles: fileHandles, dirs: dirHandles } = await readPickedDirectory(handles.root);
+            setPickedDirectory(tree, fileHandles, dirHandles);
           } catch (e: unknown) {
             const err = e as Error;
-            alert(err.message);
+            if (err.name !== 'AbortError') alert(err.message);
           }
         },
       },
@@ -256,12 +291,24 @@ export default function Sidebar() {
           const newName = await promptName('Rename to:', oldName);
           if (!newName || newName === oldName) return;
           const parent = getParentDir(target);
-          try {
-            await apiFs('rename', { oldPath: target, newPath: `${parent}/${newName}` });
-            await refreshDirectory(parent);
-          } catch (e: unknown) {
-            const err = e as Error;
-            alert(err.message);
+          const dirHandle = dirHandles.get(parent);
+          if (dirHandle) {
+            try {
+              const { renameDirEntry } = await import('@/lib/file-system-access');
+              await renameDirEntry(dirHandle, oldName, newName);
+              await refreshDirectory(parent);
+            } catch (e: unknown) {
+              const err = e as Error;
+              alert(err.message);
+            }
+          } else {
+            try {
+              await apiFs('rename', { oldPath: target, newPath: `${parent}/${newName}` });
+              await refreshDirectory(parent);
+            } catch (e: unknown) {
+              const err = e as Error;
+              alert(err.message);
+            }
           }
         },
       },
@@ -272,12 +319,24 @@ export default function Sidebar() {
           if (!target) { alert('Select a file or folder first'); return; }
           if (!confirm(`Delete "${target}"?`)) return;
           const parent = getParentDir(target);
-          try {
-            await apiFs('delete', { path: target });
-            await refreshDirectory(parent);
-          } catch (e: unknown) {
-            const err = e as Error;
-            alert(err.message);
+          const dirHandle = dirHandles.get(parent);
+          if (dirHandle) {
+            try {
+              const { deleteDirEntry } = await import('@/lib/file-system-access');
+              await deleteDirEntry(dirHandle, target.split('/').pop()!);
+              await refreshDirectory(parent);
+            } catch (e: unknown) {
+              const err = e as Error;
+              alert(err.message);
+            }
+          } else {
+            try {
+              await apiFs('delete', { path: target });
+              await refreshDirectory(parent);
+            } catch (e: unknown) {
+              const err = e as Error;
+              alert(err.message);
+            }
           }
         },
       },
@@ -350,16 +409,24 @@ export default function Sidebar() {
       )}
 
       {/* Branch indicator */}
-      <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-[#1e1e22] bg-white/[0.01]">
-        <GitBranch size={11} className="text-cyan-400" />
-        <span className="text-[11px] text-zinc-500 font-mono">main</span>
-        <span className="text-[10px] text-emerald-400 ml-auto font-mono">✓ clean</span>
-      </div>
+      {fileTree.length > 0 && (
+        <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-[#1e1e22] bg-white/[0.01]">
+          <GitBranch size={11} className="text-cyan-400" />
+          <span className="text-[11px] text-zinc-500 font-mono">main</span>
+          <span className="text-[10px] text-emerald-400 ml-auto font-mono">✓ clean</span>
+        </div>
+      )}
 
       {/* File Tree */}
       <div className="flex-1 overflow-y-auto py-1">
         {fileTree.length === 0 ? (
-          <div className="px-3 py-4 text-[11px] text-zinc-600 text-center">No files found</div>
+          <div className="px-4 py-8 flex flex-col items-center gap-2 text-center">
+            <FolderOpen size={28} className="text-zinc-700" />
+            <span className="text-[12px] text-zinc-500">No folder open</span>
+            <span className="text-[10px] text-zinc-700 leading-relaxed max-w-[180px]">
+              Use <kbd className="text-zinc-600 bg-white/[0.04] px-1 rounded font-mono">File → Open Folder</kbd> to browse your project
+            </span>
+          </div>
         ) : (
           fileTree.map((node) => (
             <TreeNode key={node.path} node={node} query={query} />
@@ -369,8 +436,10 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="px-2 sm:px-3 py-2 border-t border-[#1e1e22] flex items-center gap-2">
-        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-        <span className="text-[10px] text-zinc-600 font-mono truncate">Project root</span>
+        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${fileTree.length > 0 ? 'bg-emerald-400' : 'bg-zinc-700'}`} />
+        <span className="text-[10px] text-zinc-600 font-mono truncate">
+          {fileTree.length > 0 ? 'Ready' : 'No folder'}
+        </span>
       </div>
     </div>
   );

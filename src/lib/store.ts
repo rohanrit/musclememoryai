@@ -2,12 +2,13 @@
 import { create } from 'zustand';
 import type { EditorTab, TerminalLine, FileNode } from './types';
 import { generateId, getLanguageFromPath, getFileName } from './utils';
-import { DEMO_FILE_TREE, DEMO_CONTENTS, INITIAL_TERMINAL } from './demo-data';
+import { INITIAL_TERMINAL } from './demo-data';
+import { readFileFromHandle } from './file-system-access';
 
 type PanelId = 'terminal' | 'swarm' | 'problems' | 'output';
 
 interface IDEState {
-  fileTree: typeof DEMO_FILE_TREE;
+  fileTree: FileNode[];
   expandedDirs: Set<string>;
   selectedFile: string | null;
   tabs: EditorTab[];
@@ -22,8 +23,11 @@ interface IDEState {
   fileCount: number;
   totalSize: number;
   loadingDirs: Set<string>;
+  fileHandles: Map<string, unknown>;
+  dirHandles: Map<string, unknown>;
   initializeIDE: (tree: FileNode[], fileCount: number, totalSize: number) => void;
   setFileTree: (tree: FileNode[]) => void;
+  setPickedDirectory: (tree: FileNode[], handles: Map<string, unknown>, dirHandles: Map<string, unknown>) => void;
   loadDirectory: (path: string) => Promise<void>;
   refreshDirectory: (path: string) => Promise<void>;
   toggleDir: (path: string) => void;
@@ -42,29 +46,31 @@ interface IDEState {
 }
 
 export const useIDEStore = create<IDEState>((set, get) => ({
-  fileTree: DEMO_FILE_TREE,
-  expandedDirs: new Set(['/bappa-app', '/bappa-app/src', '/bappa-app/src/components']),
-  selectedFile: '/bappa-app/src/App.tsx',
-  tabs: [{
-    id: 'tab-1', filePath: '/bappa-app/src/App.tsx', fileName: 'App.tsx',
-    language: 'typescriptreact', content: DEMO_CONTENTS['/bappa-app/src/App.tsx'],
-    isDirty: false, isActive: true,
-  }],
-  activeTabId: 'tab-1',
+  fileTree: [],
+  expandedDirs: new Set(),
+  selectedFile: null,
+  tabs: [],
+  activeTabId: null,
   sidebarOpen: true,
   rightSidebarOpen: true,
   bottomPanelOpen: true,
   activeBottomPanel: 'swarm',
   terminalLines: INITIAL_TERMINAL,
   commandBarOpen: false,
-  fileContents: DEMO_CONTENTS,
+  fileContents: {},
   fileCount: 0,
   totalSize: 0,
   loadingDirs: new Set(),
+  fileHandles: new Map(),
+  dirHandles: new Map(),
 
   toggleDir: (path) => set((s) => {
     const next = new Set(s.expandedDirs);
-    next.has(path) ? next.delete(path) : next.add(path);
+    if (next.has(path)) {
+      next.delete(path);
+    } else {
+      next.add(path);
+    }
     return { expandedDirs: next };
   }),
 
@@ -78,6 +84,14 @@ export const useIDEStore = create<IDEState>((set, get) => ({
       return;
     }
     let content = s.fileContents[path];
+    if (!content) {
+      const handle = s.fileHandles.get(path);
+      if (handle) {
+        try {
+          content = await readFileFromHandle(handle);
+        } catch { /* fallback */ }
+      }
+    }
     if (!content) {
       try {
         const res = await fetch(`/api/file-content?path=${encodeURIComponent(path)}`);
@@ -127,30 +141,61 @@ export const useIDEStore = create<IDEState>((set, get) => ({
     expandedDirs: new Set(),
   })),
   setFileTree: (tree) => set({ fileTree: tree, expandedDirs: new Set() }),
+  setPickedDirectory: (tree, handles, dirHandles) => set({ fileTree: tree, fileHandles: handles, dirHandles, expandedDirs: new Set(), selectedFile: null, tabs: [], activeTabId: null }),
   refreshDirectory: async (dirPath) => {
     set((s) => ({ loadingDirs: new Set(s.loadingDirs).add(dirPath) }));
     try {
-      const res = await fetch(`/api/directory-content?path=${encodeURIComponent(dirPath)}`);
-      if (!res.ok) return;
-      const data = await res.json();
-      const children: FileNode[] = data.children;
+      const s = get();
+      const dirHandle = s.dirHandles.get(dirPath);
+      if (dirHandle) {
+        const { refreshDirHandle } = await import('@/lib/file-system-access');
+        const effectivePath = dirPath === '.' ? '' : dirPath;
+        const children = await refreshDirHandle(dirHandle, effectivePath, s.fileHandles, s.dirHandles);
+        if (dirPath === '.') {
+          set((s) => ({
+            fileTree: children,
+            loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
+          }));
+        } else {
+          function mergeChildren(nodes: FileNode[]): FileNode[] {
+            return nodes.map((n) => {
+              if (n.path === dirPath) {
+                return { ...n, children };
+              }
+              if (n.children) {
+                return { ...n, children: mergeChildren(n.children) };
+              }
+              return n;
+            });
+          }
+          set((s) => ({
+            fileTree: mergeChildren(s.fileTree),
+            loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
+          }));
+        }
+      } else {
+        const res = await fetch(`/api/directory-content?path=${encodeURIComponent(dirPath)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const children: FileNode[] = data.children;
 
-      function mergeChildren(nodes: FileNode[]): FileNode[] {
-        return nodes.map((n) => {
-          if (n.path === dirPath) {
-            return { ...n, children };
-          }
-          if (n.children) {
-            return { ...n, children: mergeChildren(n.children) };
-          }
-          return n;
-        });
+        function mergeChildren(nodes: FileNode[]): FileNode[] {
+          return nodes.map((n) => {
+            if (n.path === dirPath) {
+              return { ...n, children };
+            }
+            if (n.children) {
+              return { ...n, children: mergeChildren(n.children) };
+            }
+            return n;
+          });
+        }
+
+        set((s) => ({
+          fileTree: mergeChildren(s.fileTree),
+          loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
+        }));
       }
-
-      set((s) => ({
-        fileTree: mergeChildren(s.fileTree),
-        loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
-      }));
     } catch {
       set((s) => ({
         loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
@@ -162,27 +207,56 @@ export const useIDEStore = create<IDEState>((set, get) => ({
     if (s.loadingDirs.has(dirPath)) return;
     set((s) => ({ loadingDirs: new Set(s.loadingDirs).add(dirPath) }));
     try {
-      const res = await fetch(`/api/directory-content?path=${encodeURIComponent(dirPath)}`);
-      if (!res.ok) return;
-      const data = await res.json();
-      const children: FileNode[] = data.children;
+      const dirHandle = s.dirHandles.get(dirPath);
+      if (dirHandle) {
+        const { refreshDirHandle } = await import('@/lib/file-system-access');
+        const effectivePath = dirPath === '.' ? '' : dirPath;
+        const children = await refreshDirHandle(dirHandle, effectivePath, s.fileHandles, s.dirHandles);
+        if (dirPath === '.') {
+          set((s) => ({
+            fileTree: children,
+            loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
+          }));
+        } else {
+          function mergeChildren(nodes: FileNode[]): FileNode[] {
+            return nodes.map((n) => {
+              if (n.path === dirPath) {
+                return { ...n, children };
+              }
+              if (n.children) {
+                return { ...n, children: mergeChildren(n.children) };
+              }
+              return n;
+            });
+          }
+          set((s) => ({
+            fileTree: mergeChildren(s.fileTree),
+            loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
+          }));
+        }
+      } else {
+        const res = await fetch(`/api/directory-content?path=${encodeURIComponent(dirPath)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const children: FileNode[] = data.children;
 
-      function mergeChildren(nodes: FileNode[]): FileNode[] {
-        return nodes.map((n) => {
-          if (n.path === dirPath) {
-            return { ...n, children };
-          }
-          if (n.children) {
-            return { ...n, children: mergeChildren(n.children) };
-          }
-          return n;
-        });
+        function mergeChildren(nodes: FileNode[]): FileNode[] {
+          return nodes.map((n) => {
+            if (n.path === dirPath) {
+              return { ...n, children };
+            }
+            if (n.children) {
+              return { ...n, children: mergeChildren(n.children) };
+            }
+            return n;
+          });
+        }
+
+        set((s) => ({
+          fileTree: mergeChildren(s.fileTree),
+          loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
+        }));
       }
-
-      set((s) => ({
-        fileTree: mergeChildren(s.fileTree),
-        loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),
-      }));
     } catch {
       set((s) => ({
         loadingDirs: new Set([...s.loadingDirs].filter(d => d !== dirPath)),

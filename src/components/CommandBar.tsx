@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Command, Zap, Wrench, Moon, TestTube, Bug, Gauge, ArrowRight,
-  Shield, GitBranch, Sparkles, X,
+  GitBranch, Sparkles, X, Loader2,
 } from 'lucide-react';
 import { useIDEStore } from '@/lib/store';
-import { useSwarmStore } from '@/lib/swarm-store';
 import { DEFAULT_SUGGESTIONS } from '@/lib/constants';
+import { callAI } from '@/lib/ai';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   refactor: <Wrench size={14} className="text-amber-400" />,
@@ -19,8 +19,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 };
 
 export default function CommandBar() {
-  const { commandBarOpen, toggleCommandBar, addTerminalLine, selectedFile } = useIDEStore();
-  const { submitTask } = useSwarmStore();
+  const { commandBarOpen, toggleCommandBar, addTerminalLine, selectedFile, fileContents, tabs, activeTabId } = useIDEStore();
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,13 +39,13 @@ export default function CommandBar() {
   }, [commandBarOpen, toggleCommandBar]);
 
   useEffect(() => {
-    if (commandBarOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-    if (!commandBarOpen) {
+    if (commandBarOpen) {
+      inputRef.current?.focus();
+    } else {
       setInput('');
       setIsProcessing(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commandBarOpen]);
 
   const handleSubmit = async () => {
@@ -54,29 +53,29 @@ export default function CommandBar() {
     setIsProcessing(true);
 
     addTerminalLine(`$ vibe "${input}"`, 'input');
-    addTerminalLine('⚙️ Fragmenting task into micro-chunks...', 'system');
 
-    submitTask(input);
+    const activeFile = tabs.find(t => t.id === activeTabId);
+    const context = activeFile
+      ? `The currently open file is "${activeFile.filePath}" with the following content:\n\`\`\`\n${activeFile.content}\n\`\`\``
+      : '';
 
-    setTimeout(() => {
-      addTerminalLine(`✓ Task fragmented into 24 chunks`, 'success');
-      addTerminalLine('🔒 Applying context stripping & E2E encryption...', 'system');
-    }, 800);
+    try {
+      const response = await callAI(
+        [{ role: 'user', content: input }],
+        {
+          system: `You are Bappa, an AI coding assistant inside a distributed IDE. The user has issued a coding command via the command palette.${context ? `\n\n${context}` : ''}\n\nRespond with the specific code changes needed. If modifying a file, show the exact code to write. Be concise and precise.`,
+        },
+      );
 
-    setTimeout(() => {
-      addTerminalLine('✓ Chunks encrypted & dispatched to 12 peers', 'success');
-      addTerminalLine('⏳ Waiting for consensus from swarm...', 'system');
-    }, 1600);
-
-    setTimeout(() => {
-      addTerminalLine('✓ Consensus reached — applying diffs...', 'success');
-      if (selectedFile) {
-        addTerminalLine(`📝 Modified: ${selectedFile}`, 'output');
-      }
-      addTerminalLine('✅ Task complete — 0 hallucinations filtered', 'success');
+      addTerminalLine(response, 'output');
+      addTerminalLine('✅ Task complete via OpenRouter', 'success');
+    } catch (e: unknown) {
+      const err = e as Error;
+      addTerminalLine(`Error: ${err.message}`, 'error');
+    } finally {
       setIsProcessing(false);
       toggleCommandBar();
-    }, 3000);
+    }
   };
 
   const filtered = DEFAULT_SUGGESTIONS.filter((s) =>
@@ -127,8 +126,8 @@ export default function CommandBar() {
               <div className="animate-shimmer w-full h-1 rounded bg-violet-500/20" />
             </div>
             <div className="flex items-center gap-2 text-[12px] text-zinc-500">
-              <Shield size={12} className="text-emerald-400" />
-              <span>Context stripped · E2E encrypted · Dispatching to swarm...</span>
+              <Loader2 size={12} className="text-violet-400 animate-spin" />
+              <span>Calling AI via OpenRouter...</span>
             </div>
           </div>
         )}

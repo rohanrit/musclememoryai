@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Key } from 'lucide-react';
 
 interface ApiKeysModalProps {
@@ -8,8 +8,6 @@ interface ApiKeysModalProps {
 }
 
 export default function ApiKeysModal({ isOpen, onClose }: ApiKeysModalProps) {
-  if (!isOpen) return null;
-
   const providers = [
     { id: 'google', name: 'Google (Gemini)' },
     { id: 'anthropic', name: 'Anthropic (Claude)' },
@@ -18,6 +16,31 @@ export default function ApiKeysModal({ isOpen, onClose }: ApiKeysModalProps) {
     { id: 'openrouter', name: 'OpenRouter' },
     { id: 'openclaw', name: 'OpenClaw' },
   ];
+
+  const [keys, setKeys] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    for (const p of providers) {
+      try {
+        initial[p.id] = localStorage.getItem('bappa_ai_key_' + p.id) || '';
+      } catch {
+        initial[p.id] = '';
+      }
+    }
+    return initial;
+  });
+
+  const handleSave = () => {
+    for (const p of providers) {
+      if (keys[p.id]) {
+        localStorage.setItem('bappa_ai_key_' + p.id, keys[p.id]);
+      } else {
+        localStorage.removeItem('bappa_ai_key_' + p.id);
+      }
+    }
+    onClose();
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -42,6 +65,8 @@ export default function ApiKeysModal({ isOpen, onClose }: ApiKeysModalProps) {
                 <input 
                   type="password" 
                   placeholder={`Enter ${provider.name} key...`}
+                  value={keys[provider.id]}
+                  onChange={(e) => setKeys(prev => ({ ...prev, [provider.id]: e.target.value }))}
                   className="w-full bg-[#131317] border border-[#2a2a30] rounded-md px-3 py-1.5 text-[12px] text-zinc-200 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50"
                 />
               </div>
@@ -53,7 +78,7 @@ export default function ApiKeysModal({ isOpen, onClose }: ApiKeysModalProps) {
           <button onClick={onClose} className="px-3 py-1.5 rounded-md text-[12px] text-zinc-400 hover:text-zinc-200 hover:bg-white/5 transition-colors">
             Cancel
           </button>
-          <button onClick={onClose} className="px-3 py-1.5 rounded-md text-[12px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors">
+          <button onClick={handleSave} className="px-3 py-1.5 rounded-md text-[12px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors">
             Save Keys
           </button>
         </div>

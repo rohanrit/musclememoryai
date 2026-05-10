@@ -2,7 +2,7 @@
 // SwarmMonitor — Real-time P2P computation dashboard
 import React, { useEffect, useRef } from 'react';
 import {
-  Cpu, HardDrive, Wifi, Activity, Zap, Shield,
+  Cpu, HardDrive, Activity, Zap, Shield,
   CheckCircle2, Clock, AlertTriangle, Globe,
 } from 'lucide-react';
 import { useSwarmStore } from '@/lib/swarm-store';

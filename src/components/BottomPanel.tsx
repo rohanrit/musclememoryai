@@ -3,7 +3,7 @@
 import React from 'react';
 import {
   Terminal as TerminalIcon, Radio, AlertCircle, FileOutput,
-  ChevronDown, Maximize2, X,
+  ChevronDown,
 } from 'lucide-react';
 import { useIDEStore } from '@/lib/store';
 import SwarmMonitor from './SwarmMonitor';

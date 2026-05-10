@@ -1,13 +1,11 @@
 'use client';
 // StatusBar — bottom status bar with file info, encoding, position
 import React from 'react';
-import { GitBranch, Shield, Cpu, Wifi, ChevronUp, ChevronDown, Terminal } from 'lucide-react';
+import { GitBranch, Shield, Cpu } from 'lucide-react';
 import { useIDEStore } from '@/lib/store';
-import { useSwarmStore } from '@/lib/swarm-store';
 
 export default function StatusBar() {
-  const { tabs, activeTabId, bottomPanelOpen, toggleBottomPanel } = useIDEStore();
-  const { isConnected, stats } = useSwarmStore();
+  const { tabs, activeTabId } = useIDEStore();
   const activeTab = tabs.find((t) => t.id === activeTabId);
 
   return (
@@ -17,16 +15,6 @@ export default function StatusBar() {
         <div className="flex items-center gap-1 text-zinc-500 shrink-0">
           <GitBranch size={11} className="text-cyan-400" />
           <span className="hidden sm:inline">main</span>
-        </div>
-        <div className="flex items-center gap-1 shrink-0">
-          {isConnected ? (
-            <>
-              <Wifi size={10} className="text-emerald-400" />
-              <span className="text-emerald-400">{stats.activePeers}p</span>
-            </>
-          ) : (
-            <span className="text-rose-400 truncate">Disc</span>
-          )}
         </div>
         <div className="flex items-center gap-1 text-zinc-600 shrink-0 hidden sm:flex">
           <Shield size={10} className="text-violet-400" />
@@ -48,16 +36,6 @@ export default function StatusBar() {
           <Cpu size={10} />
           <span>Local: 12%</span>
         </div>
-        <button
-          onClick={toggleBottomPanel}
-          className={`flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-white/5 transition-colors shrink-0 ${
-            bottomPanelOpen ? 'text-amber-400' : 'text-zinc-500 hover:text-zinc-300'
-          }`}
-          title={bottomPanelOpen ? 'Close panel' : 'Open panel'}
-        >
-          <Terminal size={10} />
-          {bottomPanelOpen ? <ChevronDown size={10} /> : <ChevronUp size={10} />}
-        </button>
       </div>
     </div>
   );

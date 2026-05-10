@@ -3,7 +3,7 @@
 import React from 'react';
 import {
   PanelLeftClose, PanelLeftOpen, Terminal, Layout,
-  Wifi, WifiOff, Zap, ChevronDown, Command, Sparkles,
+  Wifi, WifiOff, Zap, Command, Sparkles,
 } from 'lucide-react';
 import { useIDEStore } from '@/lib/store';
 import { useSwarmStore } from '@/lib/swarm-store';
