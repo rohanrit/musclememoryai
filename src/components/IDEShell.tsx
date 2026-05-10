@@ -1,6 +1,5 @@
 'use client';
-// VibeCode IDE — Main Shell
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import TitleBar from '@/components/TitleBar';
 import Sidebar from '@/components/Sidebar';
 import RightSidebar from '@/components/RightSidebar';
@@ -10,58 +9,67 @@ import StatusBar from '@/components/StatusBar';
 import CommandBar from '@/components/CommandBar';
 import { useSwarmStore } from '@/lib/swarm-store';
 import { useIDEStore } from '@/lib/store';
-import { Panel, Group, Separator } from 'react-resizable-panels';
 
 export default function IDEShell() {
   const initPeers = useSwarmStore((s) => s.initPeers);
-  const { sidebarOpen, bottomPanelOpen, rightSidebarOpen } = useIDEStore();
+  const { sidebarOpen, bottomPanelOpen, rightSidebarOpen, toggleSidebar, toggleRightSidebar, toggleBottomPanel } = useIDEStore();
+  const initialized = useRef(false);
 
   useEffect(() => {
     initPeers();
   }, [initPeers]);
 
+  useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+    const w = window.innerWidth;
+    if (w < 1024 && sidebarOpen) toggleSidebar();
+    if (w < 1280 && rightSidebarOpen) toggleRightSidebar();
+    if (w < 768 && bottomPanelOpen) toggleBottomPanel();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const leftCol = sidebarOpen ? 'auto' : '0px';
+  const rightCol = rightSidebarOpen ? 'auto' : '0px';
+
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#09090b]">
+    <div
+      className="ide-grid bg-[#09090b]"
+      style={{ gridTemplateColumns: `${leftCol} 1fr ${rightCol}` }}
+    >
       <TitleBar />
       
-      <Group orientation="horizontal" className="flex-1 overflow-hidden">
-        {sidebarOpen && (
-          <>
-            <Panel defaultSize={10} minSize={5} maxSize={40}>
-              <Sidebar />
-            </Panel>
-            <Separator className="w-[1px] bg-[#1e1e22] hover:bg-violet-500/50 hover:w-[3px] active:bg-violet-500 transition-all cursor-col-resize z-50" />
-          </>
-        )}
+      {sidebarOpen && (
+        <div className="ide-sidebar-left border-r border-[#1e1e22]">
+          <Sidebar />
+        </div>
+      )}
+      
+      <div className="ide-main">
+        <div className="flex-1 overflow-hidden min-h-0">
+          <EditorArea />
+        </div>
         
-        <Panel defaultSize={65} minSize={30}>
-          <Group orientation="vertical" className="w-full h-full">
-            <Panel defaultSize={70} minSize={30}>
-              <EditorArea />
-            </Panel>
-            
-            {bottomPanelOpen && (
-              <>
-                <Separator className="h-[1px] bg-[#1e1e22] hover:bg-violet-500/50 hover:h-[3px] active:bg-violet-500 transition-all cursor-row-resize z-50" />
-                <Panel defaultSize={30} minSize={15} maxSize={60}>
-                  <BottomPanel />
-                </Panel>
-              </>
-            )}
-          </Group>
-        </Panel>
-
-        {rightSidebarOpen && (
+        {bottomPanelOpen && (
           <>
-            <Separator className="w-[1px] bg-[#1e1e22] hover:bg-violet-500/50 hover:w-[3px] active:bg-violet-500 transition-all cursor-col-resize z-50" />
-            <Panel defaultSize={25} minSize={20} maxSize={50}>
-              <RightSidebar />
-            </Panel>
+            <div className="h-[1px] bg-[#1e1e22] shrink-0" />
+            <div className="overflow-hidden" style={{ flex: '0 0 50%', minHeight: 120 }}>
+              <BottomPanel />
+            </div>
           </>
         )}
-      </Group>
+      </div>
 
-      <StatusBar />
+      {rightSidebarOpen && (
+        <div className="ide-sidebar-right border-l border-[#1e1e22]">
+          <RightSidebar />
+        </div>
+      )}
+
+      <div className="ide-statusbar">
+        <StatusBar />
+      </div>
+
       <CommandBar />
     </div>
   );

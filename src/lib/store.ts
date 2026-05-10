@@ -27,6 +27,7 @@ interface IDEState {
   toggleSidebar: () => void;
   toggleRightSidebar: () => void;
   toggleBottomPanel: () => void;
+  toggleAllPanels: () => void;
   setActiveBottomPanel: (panel: PanelId) => void;
   toggleCommandBar: () => void;
   addTerminalLine: (content: string, type: TerminalLine['type']) => void;
@@ -89,6 +90,11 @@ export const useIDEStore = create<IDEState>((set, get) => ({
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   toggleRightSidebar: () => set((s) => ({ rightSidebarOpen: !s.rightSidebarOpen })),
   toggleBottomPanel: () => set((s) => ({ bottomPanelOpen: !s.bottomPanelOpen })),
+  toggleAllPanels: () => set((s) => ({
+    sidebarOpen: !s.sidebarOpen,
+    rightSidebarOpen: !s.rightSidebarOpen,
+    bottomPanelOpen: !s.bottomPanelOpen,
+  })),
   setActiveBottomPanel: (panel) => set({ activeBottomPanel: panel, bottomPanelOpen: true }),
   toggleCommandBar: () => set((s) => ({ commandBarOpen: !s.commandBarOpen })),
 

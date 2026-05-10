@@ -102,9 +102,9 @@ export default function Sidebar() {
       </div>
 
       {/* Footer stats */}
-      <div className="px-3 py-2 border-t border-[#1e1e22] flex items-center gap-2">
-        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-        <span className="text-[10px] text-zinc-600 font-mono">12 files · 18.2 KB</span>
+      <div className="px-2 sm:px-3 py-2 border-t border-[#1e1e22] flex items-center gap-2">
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+        <span className="text-[10px] text-zinc-600 font-mono truncate">12 files · 18.2 KB</span>
       </div>
     </div>
   );

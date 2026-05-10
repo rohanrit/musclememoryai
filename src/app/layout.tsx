@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrains.variable} dark`}>
-      <body className="h-full overflow-hidden bg-[#09090b] text-zinc-100 antialiased">
+      <body className="h-full overflow-hidden bg-[#09090b] text-zinc-100 antialiased" suppressHydrationWarning>
         {children}
       </body>
     </html>

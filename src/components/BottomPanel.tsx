@@ -54,7 +54,7 @@ export default function BottomPanel() {
   return (
     <div className="w-full h-full bg-[#0a0a0d] border-t border-[#1e1e22] flex flex-col shrink-0">
       {/* Tab bar */}
-      <div className="flex items-center border-b border-[#1e1e22] shrink-0">
+      <div className="flex items-center border-b border-[#1e1e22] shrink-0 overflow-x-auto">
         {PANELS.map((panel) => (
           <button
             key={panel.id}

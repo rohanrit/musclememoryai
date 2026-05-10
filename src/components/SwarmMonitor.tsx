@@ -29,21 +29,21 @@ function PeerRow({ peer }: { peer: { displayName: string; status: string; latenc
   return (
     <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-white/[0.02] rounded text-[11px] transition-colors">
       <div className={`status-dot ${peer.status}`} />
-      <span className="text-zinc-300 w-16 truncate font-mono">{peer.displayName}</span>
-      <span className="text-zinc-600 w-16 truncate">{peer.location}</span>
-      <span className="text-zinc-500 w-12 text-right font-mono">{Math.round(peer.latency)}ms</span>
-      <div className="flex-1 mx-2">
-        <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{
-              width: `${peer.cpuUsage}%`,
-              background: peer.cpuUsage > 70 ? '#f43f5e' : peer.cpuUsage > 40 ? '#f59e0b' : '#10b981',
-            }}
-          />
-        </div>
-      </div>
-      <span className="text-zinc-600 w-10 text-right font-mono">{peer.chunksProcessed}</span>
+          <span className="text-zinc-300 w-12 sm:w-16 truncate font-mono">{peer.displayName}</span>
+          <span className="text-zinc-600 w-12 sm:w-16 truncate hidden sm:block">{peer.location}</span>
+          <span className="text-zinc-500 w-10 sm:w-12 text-right font-mono">{Math.round(peer.latency)}ms</span>
+          <div className="flex-1 mx-1 sm:mx-2">
+            <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{
+                  width: `${peer.cpuUsage}%`,
+                  background: peer.cpuUsage > 70 ? '#f43f5e' : peer.cpuUsage > 40 ? '#f59e0b' : '#10b981',
+                }}
+              />
+            </div>
+          </div>
+          <span className="text-zinc-600 w-8 sm:w-10 text-right font-mono">{peer.chunksProcessed}</span>
     </div>
   );
 }
@@ -63,7 +63,7 @@ export default function SwarmMonitor() {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Stats row */}
-      <div className="flex gap-2 px-3 py-2 border-b border-[#1e1e22] overflow-x-auto">
+      <div className="flex gap-2 px-3 py-2 border-b border-[#1e1e22] overflow-x-auto flex-wrap">
         <StatCard icon={<Globe size={13} className="text-violet-400" />} label="Peers" value={`${stats.activePeers}/${stats.totalPeers}`} color="#7c3aed" />
         <StatCard icon={<Cpu size={13} className="text-cyan-400" />} label="CPU Saved" value={`${stats.cpuSaved}%`} color="#06b6d4" />
         <StatCard icon={<HardDrive size={13} className="text-emerald-400" />} label="RAM Saved" value={`${stats.ramSaved} MB`} color="#10b981" />
@@ -87,7 +87,7 @@ export default function SwarmMonitor() {
         </div>
 
         {/* Chunk activity */}
-        <div className="w-[220px] border-l border-[#1e1e22] px-3 py-2 overflow-y-auto">
+        <div className="w-[180px] lg:w-[220px] border-l border-[#1e1e22] px-2 lg:px-3 py-2 overflow-y-auto hidden md:block">
           <p className="text-[10px] text-zinc-600 uppercase tracking-wider font-semibold mb-2">Active Chunks</p>
           {activeChunks.length === 0 ? (
             <p className="text-[11px] text-zinc-600 italic">No active tasks</p>

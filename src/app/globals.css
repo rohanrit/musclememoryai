@@ -99,10 +99,10 @@ html, body {
 /* ===== IDE LAYOUT ===== */
 .ide-grid {
   display: grid;
-  grid-template-rows: 44px 1fr auto;
-  grid-template-columns: auto 1fr;
+  grid-template-rows: 44px 1fr 22px;
   height: 100vh;
   width: 100vw;
+  overflow: hidden;
 }
 
 .ide-titlebar {
@@ -110,9 +110,20 @@ html, body {
   grid-row: 1;
 }
 
-.ide-sidebar {
+.ide-sidebar-left {
   grid-column: 1;
-  grid-row: 2 / -1;
+  grid-row: 2;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.ide-sidebar-right {
+  grid-column: 3;
+  grid-row: 2;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-width: 0;
 }
 
 .ide-main {
@@ -121,10 +132,11 @@ html, body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
 }
 
-.ide-bottom {
-  grid-column: 2;
+.ide-statusbar {
+  grid-column: 1 / -1;
   grid-row: 3;
 }
 

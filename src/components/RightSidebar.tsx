@@ -109,7 +109,7 @@ export default function RightSidebar() {
             }`} title={msg.role === 'agent' ? 'Agent' : 'User'}>
               {msg.role === 'agent' ? <Bot size={13} /> : <User size={13} />}
             </div>
-            <div className={`text-[12px] p-2 rounded max-w-[85%] leading-relaxed ${
+            <div className={`text-[12px] p-2 rounded max-w-[90%] sm:max-w-[85%] leading-relaxed ${
               msg.role === 'user' ? 'bg-zinc-800/80 text-zinc-200 rounded-tr-none' : 'bg-[#1a1a1f] border border-[#2a2a30] text-zinc-300 rounded-tl-none'
             }`}>
               {msg.content}
@@ -173,10 +173,10 @@ export default function RightSidebar() {
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-1.5 text-[10px] text-zinc-500">
             <TerminalSquare size={11} />
-            <span>Cmd+L to chat</span>
+            <span className="hidden sm:inline">Cmd+L to chat</span>
           </div>
           <span className="text-[10px] text-zinc-500 font-mono flex items-center gap-1">
-            <Layers size={10} /> Current Session
+            <Layers size={10} /> <span className="hidden sm:inline">Current Session</span>
           </span>
         </div>
       </div>
