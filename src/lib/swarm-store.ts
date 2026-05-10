@@ -1,4 +1,4 @@
-// VibeCode Swarm Store — P2P state management
+// Bappa Swarm Store — P2P state management
 import { create } from 'zustand';
 import type { Peer, ChunkStatus, SwarmStats, VibeTask } from './types';
 import { generateId } from './utils';

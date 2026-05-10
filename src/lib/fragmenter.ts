@@ -1,4 +1,4 @@
-// VibeCode Task Fragmenter — breaks user prompts into atomic micro-chunks
+// Bappa Task Fragmenter — breaks user prompts into atomic micro-chunks
 import type { TaskFragment, ContextMapping } from './types';
 import { generateId, simulateHash } from './utils';
 import { FRAGMENTER_CONFIG, SECURITY_CONFIG } from './constants';

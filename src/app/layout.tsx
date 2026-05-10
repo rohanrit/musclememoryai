@@ -13,7 +13,7 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VibeCode — Distributed AI Coding IDE",
+  title: "Bappa — Distributed AI Coding IDE",
   description: "A free, open-source IDE that uses P2P networking to distribute AI computation across a swarm of peers. Code smarter with the power of the swarm.",
   keywords: ["IDE", "AI", "P2P", "distributed computing", "vibe coding", "open source"],
 };

@@ -17,7 +17,7 @@ export default function RightSidebar() {
   ]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState('Claude 3.5 Sonnet');
-  const [selectedAgent, setSelectedAgent] = useState('VibeCoder (Default)');
+  const [selectedAgent, setSelectedAgent] = useState('Bappa (Default)');
   const [attachedFiles, setAttachedFiles] = useState([
     { name: 'App.tsx', type: 'file' },
     { name: 'components/', type: 'folder' }

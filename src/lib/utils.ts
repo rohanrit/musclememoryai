@@ -1,4 +1,4 @@
-// VibeCode Utility Functions
+// Bappa Utility Functions
 
 import { LANGUAGE_MAP, FILE_ICON_COLORS } from './constants';
 

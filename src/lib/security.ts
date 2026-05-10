@@ -1,4 +1,4 @@
-// VibeCode Security Layer — E2E Encryption, Hashing, SRI
+// Bappa Security Layer — E2E Encryption, Hashing, SRI
 import nacl from 'tweetnacl';
 import { encodeBase64, decodeBase64 } from 'tweetnacl-util';
 import type { EncryptionKeys } from './types';

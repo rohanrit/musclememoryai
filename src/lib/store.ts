@@ -1,4 +1,4 @@
-// VibeCode IDE Store
+// Bappa IDE Store
 import { create } from 'zustand';
 import type { EditorTab, TerminalLine, FileNode } from './types';
 import { generateId, getLanguageFromPath, getFileName } from './utils';
@@ -43,11 +43,11 @@ interface IDEState {
 
 export const useIDEStore = create<IDEState>((set, get) => ({
   fileTree: DEMO_FILE_TREE,
-  expandedDirs: new Set(['/vibecode-app', '/vibecode-app/src', '/vibecode-app/src/components']),
-  selectedFile: '/vibecode-app/src/App.tsx',
+  expandedDirs: new Set(['/bappa-app', '/bappa-app/src', '/bappa-app/src/components']),
+  selectedFile: '/bappa-app/src/App.tsx',
   tabs: [{
-    id: 'tab-1', filePath: '/vibecode-app/src/App.tsx', fileName: 'App.tsx',
-    language: 'typescriptreact', content: DEMO_CONTENTS['/vibecode-app/src/App.tsx'],
+    id: 'tab-1', filePath: '/bappa-app/src/App.tsx', fileName: 'App.tsx',
+    language: 'typescriptreact', content: DEMO_CONTENTS['/bappa-app/src/App.tsx'],
     isDirty: false, isActive: true,
   }],
   activeTabId: 'tab-1',

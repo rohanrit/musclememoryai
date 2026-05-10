@@ -23,7 +23,7 @@ export default function TitleBar() {
           </div>
         </div>
         <span className="text-[13px] font-semibold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
-          VibeCode
+          Bappa
         </span>
         <span className="text-[10px] text-zinc-600 font-mono hidden sm:inline">v0.1α</span>
       </div>

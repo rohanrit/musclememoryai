@@ -1,4 +1,4 @@
-// VibeCode Type Definitions
+// Bappa Type Definitions
 
 // ===== File System Types =====
 export interface FileNode {

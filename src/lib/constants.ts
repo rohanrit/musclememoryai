@@ -1,6 +1,6 @@
-// VibeCode Constants
+// Bappa Constants
 
-export const APP_NAME = 'VibeCode';
+export const APP_NAME = 'Bappa';
 export const APP_VERSION = '0.1.0-alpha';
 export const APP_TAGLINE = 'Distributed AI Coding — Powered by the Swarm';
 
@@ -10,8 +10,8 @@ export const P2P_CONFIG = {
   MIN_CONSENSUS_PEERS: 3,
   CHUNK_TIMEOUT_MS: 30000,
   DHT_BOOTSTRAP_NODES: [
-    'wss://tracker.vibecode.dev',
-    'wss://tracker2.vibecode.dev',
+    'wss://tracker.bappa.dev',
+    'wss://tracker2.bappa.dev',
   ],
   HEARTBEAT_INTERVAL_MS: 5000,
   MAX_RETRIES: 3,
